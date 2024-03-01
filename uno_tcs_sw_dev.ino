@@ -2,6 +2,7 @@
 // Peter Mahoney SP '24
 #include <stdio.h>
 #include <string.h>
+// Define UART message protocol
 #define START_MARKER '<'
 #define END_MARKER   '>'
 #define ADDR_TCS 'A'
@@ -17,24 +18,25 @@ bool heaterEnabled = true;
 char commandKeys[] = {'A','B','C','D'};
 
 void setup() {
-  // initiate serial interfaces
+  // initiate serial interface to main ArduSat bus 
+  // also can be serial monitor for debug
   Serial.begin(9600);
-  // initiate I2C interfaces
-  // instantiate global variables
-
+  // initiate I2C interfaces if any
+  // instantiate global variables if any
 }
 
 void loop() {
   // slow down loop
   delay(100);
-  // Send telem to mega every 2 seconds
+  // Send unsolicited telem to mega every 2 seconds
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= intervalShort) {
     sendTlm();
     previousMillis=currentMillis;
   }
   char commandRead = readCommand();
-  if (commandRead != "Z") {
+  // Z means it wasn't a command received
+  if (commandRead != 'Z') {
     processCommand(commandRead);
   }
   // Process sensor data
@@ -76,12 +78,15 @@ void sendTlm() {
   Serial.print(TLM);
   Serial.print(csvTcsPacket);
   Serial.print(END_MARKER);
+  heaterEnabled = true;
 }
-
+// Reads commands in (if any) from UART buffer
+// Should generalize this to other potential
+// UART traffic perhaps
 char readCommand() {
-    char noCommand = "Z";
+    char noCommand = 'Z';
     if (Serial.available()>0) {
-    char receivedChar = Serial.read();
+      char receivedChar = Serial.read();
       if (receivedChar == START_MARKER) {
         char address = Serial.read();
         if (address == ADDR_TCS) {
@@ -95,6 +100,8 @@ char readCommand() {
     }
     return noCommand;
   }
+ // Takes in a command character and validates
+ // then executes
 void processCommand(char command) {
   bool commandConfirmed = false;
   for (int i = 0; i < sizeof(commandKeys); i++) {
@@ -106,11 +113,15 @@ void processCommand(char command) {
   if (!commandConfirmed){
     return; // Character not found in the list
   }
+  // TODO use case statements here
+  // For now, A is enable heaters
   if (command == 'A'){
     heaterEnabled = true;
   }
-  else{
+  // B is disable heaters
+  else if (command == 'B'){
     heaterEnabled = false;
   }
+  // can add C and D eventually
   }
   
