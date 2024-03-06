@@ -4,7 +4,7 @@
 #include <string.h>
 #include "config.h"
 #define ADDR_TCS "TCS_ADDRS"
-char tcsAddress;
+char myAddress;
 unsigned long previousMillis = 0;
 const long intervalShort = 2000; // 2 second interval
 const long intervalLong = 5000; // 5 second interval
@@ -15,14 +15,14 @@ float temp2;
 float temp3;
 
 void setup() {
-  // initiate serial interface to main ArduSat bus 
+  // initiate serial interface to mega UART
   // also can be serial monitor for debug
   Serial.begin(9600);
   // initiate I2C interfaces if any
   // pull in TCS address
   for (int i = 0; i < sizeof(addrs) / sizeof(addrs[0]); i++) {
         if (addrs[i].name == ADDR_TCS) {
-            tcsAddress=addrs[i].address;
+            myAddress=addrs[i].address;
             break;
     }
   }
@@ -74,7 +74,7 @@ void sendTlm() {
   snprintf(csvTcsPacket, sizeof(csvTcsPacket), "%s,%s,%s,%d,%d", temp1str, temp2str, temp3str, heaterEnabledInt, heaterOnInt);
   // Print temperature values for debugging
   Serial.print(START_MARKER);
-  Serial.print(tcsAddress);
+  Serial.print(myAddress);
   Serial.print(TLM_TYPE);
   Serial.print(csvTcsPacket);
   Serial.print(END_MARKER);
@@ -90,7 +90,7 @@ char readCommand() {
       char receivedChar = Serial.read();
       if (receivedChar == START_MARKER) {
         char address = Serial.read();
-        if (address == tcsAddress) {
+        if (address == myAddress) {
           char messageType = Serial.read();
           if (messageType == CMD_TYPE){
             char commandId  = Serial.read();
