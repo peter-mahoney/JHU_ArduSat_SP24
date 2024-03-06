@@ -6,10 +6,18 @@
 #define ADDR_MEGA "MEGA_ADDRS"
 #define ADDR_EPS "EPS_ADDRS"
 #define ADDR_TTC "TTC_ADDRS"
-// variable to hold MEGA UART Address
+#define ADDR_TCS "TCS_ADDRS"
+#define ADDR_ADCS "ADCS_ADDRS"
+// variables to hold UART Address
 char megaAddress;
 char epsAddress;
 char ttcAddress;
+char tcsAddress;
+char adcsAddress;
+// Serial definitions
+HardwareSerial *TTC_UART = &Serial1;
+HardwareSerial *TCS_UART = &Serial2;
+HardwareSerial *ADCS_UART = &Serial3;
 // Setup subsystem watchdogs
 unsigned long tcsWatchdog = 0;
 unsigned long adcsWatchdog = 0;
@@ -27,10 +35,13 @@ void setup() {
   while (!Serial) {
     ; // Wait for Serial Monitor to open
   }
-  // Serial 1 is ArduSat subsystem bus
-  Serial1.begin(9600);
-  // Serial 2 interface for TTC
-  Serial2.begin(9600);
+  // Serial 1 is TTC bus
+  TTC_UART->begin(9600);
+  // Serial 2 is TCS bus
+  TCS_UART->begin(9600);
+  // Serial 3 is ADCS bus
+  ADCS_UART->begin(9600);
+
   // pull in address IDs
   for (int i = 0; i < sizeof(addrs) / sizeof(addrs[0]); i++) {
         if (addrs[i].name == ADDR_MEGA) {
@@ -42,6 +53,13 @@ void setup() {
         else if (addrs[i].name == ADDR_TTC) {
             ttcAddress = addrs[i].address;
         }
+        else if (addrs[i].name == ADDR_TCS) {
+            tcsAddress = addrs[i].address;
+        }
+        else if (addrs[i].name == ADDR_ADCS) {
+            adcsAddress = addrs[i].address;
+        }
+        
   }
 }
 
@@ -52,9 +70,10 @@ void loop() {
   // Send check if any commands in buffer from TTC
   processGroundCommand();
   // Send dummy commands to TCS
-  testCommandGenerator();
+  testCommandGenerator(*TCS_UART);
   // Get Telemetry Over UART from subsystems
-  processTelemetry();
+  processTelemetry(*TCS_UART);
+  processTelemetry(*ADCS_UART);
   // Dummy mega service loop activity to demonstrate task scheduling
   // print to the Serial terminal every 10 seconds
   unsigned long currentMillis = millis();
@@ -69,10 +88,10 @@ void processGroundCommand() {
     char badCommand = '!';
     char commandId;
     bool validAddress = false;
-    if (Serial2.available()>0) {
-      char receivedChar = Serial2.read();
+    if (TTC_UART->available()>0) {
+      char receivedChar = TTC_UART->read();
       if (receivedChar == START_MARKER) {
-        char address = Serial2.read();
+        char address = TTC_UART->read();
         for (int i = 0; i < sizeof(addrs) / sizeof(addrs[0]); i++) {
               if (addrs[i].address == address) {
                 validAddress=true;
@@ -82,27 +101,34 @@ void processGroundCommand() {
         if (validAddress != true){
           return;
         }
-        char messageType = Serial2.read();
+        char messageType = TTC_UART->read();
         if (messageType != CMD_TYPE){
            return; 
         }
-        else {commandId  = Serial2.read();}
+        else {commandId  = TTC_UART->read();}
         if (address == megaAddress){
           processMegaCommand(commandId);
         }
         else if (address == epsAddress) {
           processEpsCommand(commandId);
         }
-        else{
-          Serial1.print(START_MARKER);
-          Serial1.print(address);
-          Serial1.print(CMD_TYPE);
-          Serial1.print(commandId);
-          Serial1.print(END_MARKER);
-        } 
+        else {
+          HardwareSerial *nodeUart;
+          if (address == tcsAddress){
+            nodeUart = TCS_UART;
+          }
+          else if (address == adcsAddress){
+            nodeUart = ADCS_UART;
+          }
+          nodeUart->print(START_MARKER);
+          nodeUart->print(address);
+          nodeUart->print(CMD_TYPE);
+          nodeUart->print(commandId);
+          nodeUart->print(END_MARKER);
       }
     }
   }
+}
 
 void processMegaCommand(char commandId) {
   bool commandConfirmed = false;
@@ -153,18 +179,18 @@ void processEpsCommand(char commandId) {
   // Get telemetry from subsystems
   // Process telemetry and check rules?
   // Package telem and send to TTC over UART
- void processTelemetry() {
-  if (Serial1.available()>0) {
-    char receivedChar = Serial1.read();
+ void processTelemetry(Stream &nodeUart) {
+  if (nodeUart.available()>0) {
+    char receivedChar = nodeUart.read();
     if (receivedChar == START_MARKER) {
-      char address = Serial1.read();
+      char address = nodeUart.read();
       if (address != megaAddress) {
-        char infoType = Serial1.read();
+        char infoType = nodeUart.read();
         if (infoType == 'T'){
           Serial.print("Receiving telemetry.\n");
-          Serial2.print(START_MARKER);
-          Serial2.print(ttcAddress);
-          Serial2.print(TLM_TYPE);
+          TTC_UART->print(START_MARKER);
+          TTC_UART->print(ttcAddress);
+          TTC_UART->print(TLM_TYPE);
           // printing to serial monitor until TTC
           // full integration
           int id = 0;
@@ -172,8 +198,8 @@ void processEpsCommand(char commandId) {
           char message[5];
           message[0] = '\0';
           bool newPoint = true;
-          while (Serial1.available() > 0) {
-            char character  = Serial1.read();
+          while (nodeUart.available() > 0) {
+            char character  = nodeUart.read();
             if (character != ',' && character != END_MARKER){
               if (newPoint==true){
                 i=0;
@@ -182,7 +208,7 @@ void processEpsCommand(char commandId) {
               }
               sprintf(message,"%s%c",message,character);
               i++;
-              Serial2.print(character);
+              TTC_UART->print(character);
             }
             else {
               newPoint = true;
@@ -190,7 +216,7 @@ void processEpsCommand(char commandId) {
               Serial.print(": ");
               Serial.print(message);
               Serial.println();
-              Serial2.print(character);
+              TTC_UART->print(character);
               id++;
               if (character == END_MARKER){
                 Serial.print("End of packet.\n");
@@ -204,7 +230,7 @@ void processEpsCommand(char commandId) {
   }
  }
 // Testing for TCS integration
-void testCommandGenerator(){
+void testCommandGenerator(Stream &nodeUart){
   // Send dummy command to disable heater every 5 sec
   bool sendCommand = false;
   char commandId;
@@ -220,11 +246,11 @@ void testCommandGenerator(){
   // Build and send command using protocol
   // Pick arbitrary command, will refine this
   if (sendCommand){
-    Serial1.print(START_MARKER);
-    Serial1.print(addrs[0].address);
-    Serial1.print(CMD_TYPE);
-    Serial1.print(commandId);
-    Serial1.print(END_MARKER);
+    nodeUart.print(START_MARKER);
+    nodeUart.print(addrs[0].address);
+    nodeUart.print(CMD_TYPE);
+    nodeUart.print(commandId);
+    nodeUart.print(END_MARKER);
   }
 }
 void getEpsTelem() {
