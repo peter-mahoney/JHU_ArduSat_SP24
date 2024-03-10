@@ -1,0 +1,71 @@
+// FYI I made this with copilot and just working to see what it means -KR
+#include <Wire.h>
+#define WHO_AM_I_REG 0x0F
+#define CTRL1_XL_REG 0x10
+#define CTRL2_G_REG 0x11
+#define OUTX_L_G_REG 0x22
+#define OUTX_L_XL_REG 0x28
+
+void setup() {
+    Wire.begin();
+    Serial.begin(9600);
+
+    // Check if the IMU is connected
+    Wire.beginTransmission(IMU_ADDRESS);
+    Wire.write(WHO_AM_I_REG);
+    Wire.endTransmission(false);
+    Wire.requestFrom(IMU_ADDRESS, 1);
+    byte imuId = Wire.read();
+
+    if (imuId != 0x6A) {
+        Serial.println("IMU not found!");
+        while (1);
+    }
+
+    // Configure the IMU
+    Wire.beginTransmission(IMU_ADDRESS);
+    Wire.write(CTRL1_XL_REG);
+    Wire.write(0x60); // Accelerometer: 208 Hz, ±2g
+    Wire.endTransmission();
+
+    Wire.beginTransmission(IMU_ADDRESS);
+    Wire.write(CTRL2_G_REG);
+    Wire.write(0x60); // Gyroscope: 208 Hz, ±2000 dps
+    Wire.endTransmission();
+}
+
+void loop() {
+    // Read accelerometer data
+    Wire.beginTransmission(IMU_ADDRESS);
+    Wire.write(OUTX_L_XL_REG);
+    Wire.endTransmission(false);
+    Wire.requestFrom(IMU_ADDRESS, 6);
+    int16_t accelX = Wire.read() | (Wire.read() << 8);
+    int16_t accelY = Wire.read() | (Wire.read() << 8);
+    int16_t accelZ = Wire.read() | (Wire.read() << 8);
+
+    // Read gyroscope data
+    Wire.beginTransmission(IMU_ADDRESS);
+    Wire.write(OUTX_L_G_REG);
+    Wire.endTransmission(false);
+    Wire.requestFrom(IMU_ADDRESS, 6);
+    int16_t gyroX = Wire.read() | (Wire.read() << 8);
+    int16_t gyroY = Wire.read() | (Wire.read() << 8);
+    int16_t gyroZ = Wire.read() | (Wire.read() << 8);
+
+    // Print the sensor data
+    Serial.print("Accelerometer (mg): ");
+    Serial.print(accelX);
+    Serial.print(", ");
+    Serial.print(accelY);
+    Serial.print(", ");
+    Serial.print(accelZ);
+    Serial.print(" | Gyroscope (dps): ");
+    Serial.print(gyroX);
+    Serial.print(", ");
+    Serial.print(gyroY);
+    Serial.print(", ");
+    Serial.println(gyroZ);
+
+    delay(100);
+}

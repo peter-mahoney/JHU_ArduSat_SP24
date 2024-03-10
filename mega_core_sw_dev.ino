@@ -230,19 +230,7 @@ void processEpsCommand(char commandId) {
   }
  }
 // Testing for TCS integration
-void testCommandGenerator(Stream &nodeUart){
-  // Send dummy command to disable heater every 5 sec
-  bool sendCommand = false;
-  char commandId;
-  unsigned long currentMillis = millis();
-  unsigned long elapsedMillis = currentMillis - previousMillisTCS;
-  if (elapsedMillis > fiveSec) {
-    // CommandID should be 'B' for disabling heaters
-    commandId = tcsCmds[1].id;
-    sendCommand = true;
-    Serial.println("Mega turning heaters OFF.\n");
-    previousMillisTCS = currentMillis; // Reset the timer
-  }
+void testCommandGenerator(Stream &nodeUart); // I replaced bracket with semicolon -KR
   // Build and send command using protocol
   // Pick arbitrary command, will refine this
   if (sendCommand){
