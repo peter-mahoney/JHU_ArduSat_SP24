@@ -73,7 +73,18 @@ const Commands tcsCmds[] = {
     {"NOMINAL_SETPOINTS", 'D'},
     // Add more commands as needed...
 };
+// Define telemetry points
+const Telemetry adcsPoints[] = {
+    {"RW_ON", 'A'},
+    // Add more telemetry points as needed...
+};
 
+// Define commands
+const Commands adcsCmds[] = {
+    {"TURN_ON_RW", 'A'},
+    {"TURN_OFF_RW", 'B'},
+    // Add more commands as needed...
+};
 const Commands epsCmds[] = {
     {"ENABLE_PHOTODIODES", 'A'},
     // Add more commands as needed...
