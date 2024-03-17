@@ -15,7 +15,8 @@ char ttcAddress;
 char tcsAddress;
 char adcsAddress;
 // Serial definitions
-HardwareSerial *TTC_UART = &Serial1;
+// TODO: Replace TTC uart with Serial 1
+HardwareSerial *TTC_UART = &Serial;
 HardwareSerial *TCS_UART = &Serial2;
 HardwareSerial *ADCS_UART = &Serial3;
 // Setup subsystem watchdogs
@@ -26,7 +27,7 @@ unsigned long ttcWatchdog = 0;
 unsigned long previousMillis = 0;
 unsigned long previousMillisTCS = 0;
 const long tenSec = 10000; // 10 second interval
-const long fiveSec = 5000; // 5 second interval
+const long thirtySec = 30000; // 30 second interval
 
 void setup() {
   // initiate serial interfaces
@@ -125,6 +126,7 @@ void processGroundCommand() {
           nodeUart->print(CMD_TYPE);
           nodeUart->print(commandId);
           nodeUart->print(END_MARKER);
+          Serial.println("Sent command to node.");
       }
     }
   }
@@ -187,12 +189,20 @@ void processEpsCommand(char commandId) {
       if (address != megaAddress) {
         char infoType = nodeUart.read();
         if (infoType == 'T'){
-          Serial.print("Receiving telemetry.\n");
-          TTC_UART->print(START_MARKER);
-          TTC_UART->print(ttcAddress);
-          TTC_UART->print(TLM_TYPE);
-          // printing to serial monitor until TTC
-          // full integration
+            const char* subsystem;
+            for (int i = 0; i < sizeof(addrs) / sizeof(addrs[0]); i++) {
+              if (addrs[i].address == address) {
+                subsystem = addrs[i].name;
+                break;
+              }
+            }
+          // TODO remove all Serial prints when integrated with TTC
+          Serial.print("Receiving telemetry from: ");
+          Serial.println(subsystem);
+          // TODO: add these prints to TTC back in
+//          TTC_UART->print(START_MARKER);
+//          TTC_UART->print(ttcAddress);
+//          TTC_UART->print(TLM_TYPE);
           int id = 0;
           int i=0;
           char message[5];
@@ -208,15 +218,21 @@ void processEpsCommand(char commandId) {
               }
               sprintf(message,"%s%c",message,character);
               i++;
-              TTC_UART->print(character);
+//              TTC_UART->print(character);
             }
             else {
               newPoint = true;
-              Serial.print(tcsPoints[id].name);
+              if (subsystem == "TCS_ADDRS"){
+                Serial.print(tcsPoints[id].name);
+              }
+              else if (subsystem = "ADCS_ADDRS"){
+                Serial.print(adcsPoints[id].name);
+              }
+              else {Serial.print("UNKNOWN NODE");}
               Serial.print(": ");
               Serial.print(message);
               Serial.println();
-              TTC_UART->print(character);
+//              TTC_UART->print(character);
               id++;
               if (character == END_MARKER){
                 Serial.print("End of packet.\n");
@@ -229,10 +245,24 @@ void processEpsCommand(char commandId) {
      }
   }
  }
-// Testing for TCS integration
-void testCommandGenerator(Stream &nodeUart); // I replaced bracket with semicolon -KR
+// Testing for node integration
+// currently hardcoded for TCS node
+void testCommandGenerator(Stream &nodeUart){
+  // Send dummy command to disable heater every 5 sec
+  bool sendCommand = false;
+  char commandId;
+  unsigned long currentMillis = millis();
+  unsigned long elapsedMillis = currentMillis - previousMillisTCS;
+  if (elapsedMillis > thirtySec) {
+    // CommandID should be 'B' for disabling heaters
+    commandId = tcsCmds[1].id;
+    sendCommand = true;
+    Serial.println("MEGA sending disable heater command to TCS node.");
+    previousMillisTCS = currentMillis; // Reset the timer
+  }
   // Build and send command using protocol
   // Pick arbitrary command, will refine this
+  // hardcoded to TCS address
   if (sendCommand){
     nodeUart.print(START_MARKER);
     nodeUart.print(addrs[0].address);
