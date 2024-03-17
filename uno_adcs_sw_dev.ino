@@ -9,8 +9,8 @@ char myAddress;
 unsigned long previousMillis = 0;
 const long intervalShort = 2000; // 2 second interval
 const long intervalLong = 5000; // 5 second interval
-bool heaterEnabled = true; 
-bool heaterOn;
+bool rwOn = true;
+bool rwSpinning = false;
 float temp1; 
 float temp2;
 float temp3;
@@ -49,38 +49,23 @@ void loop() {
   }
 }
 void collectData(){
-  temp1 = 19.00;
-  temp2 = 29.00;
-  temp3 = 39.00;
-  if (heaterEnabled == true) {
-    heaterOn = true;
-  }
-  else {
-    heaterOn = false;
-  }
+// nothing!
 }
 void sendTlm() {
   // Gather telem from system and send
-  int heaterOnInt = heaterOn ? 1 : 0;  // Convert bool to int (1 for true, 0 for false)
-  int heaterEnabledInt = heaterEnabled ? 1 : 0; 
-  char temp1str[8];
-  dtostrf(temp1,5,2,temp1str);
-  char temp2str[8];
-  dtostrf(temp2,5,2,temp2str);
-  char temp3str[8];
-  dtostrf(temp3,5,2,temp3str);
+  int rwOnInt = rwOn ? 1 : 0;  // Convert bool to int (1 for true, 0 for false)
   // Buffer to hold the CSV string (adjust the size as needed)
-  char csvTcsPacket[50];
+  char csvTlmPacket[50];
   // Format the data into the CSV string
-  snprintf(csvTcsPacket, sizeof(csvTcsPacket), "%s,%s,%s,%d,%d", temp1str, temp2str, temp3str, heaterEnabledInt, heaterOnInt);
+  snprintf(csvTlmPacket, sizeof(csvTlmPacket), "%d", rwOnInt);
   // Print temperature values for debugging
   Serial.print(START_MARKER);
   Serial.print(myAddress);
   Serial.print(TLM_TYPE);
-  Serial.print(csvTcsPacket);
+  Serial.print(csvTlmPacket);
   Serial.print(END_MARKER);
-  // TODO, remove this once real TCS code implemented
-  heaterEnabled = true;
+  // TODO, remove this once real ADCS code implemented
+  rwOn = true;
 }
 // Reads commands in (if any) from UART buffer
 // Should generalize this to other potential
@@ -107,10 +92,10 @@ char readCommand() {
 void processCommand(char commandId) {
   bool commandConfirmed = false;
   const char* commandName;
-  for (int i = 0; i < sizeof(tcsCmds)/ sizeof(tcsCmds[0]); i++) {
+  for (int i = 0; i < sizeof(adcsCmds)/ sizeof(adcsCmds[0]); i++) {
         if (tcsCmds[i].id == commandId) {
             commandConfirmed = true;
-            commandName = tcsCmds[i].name;
+            commandName = adcsCmds[i].name;
             break; // Character found in the list
         }
     }
@@ -119,10 +104,10 @@ void processCommand(char commandId) {
   }
   switch (commandId) {
     case 'A':
-      heaterEnabled = true;
+      rwOn = true;
       break;
     case 'B':
-      heaterEnabled = false;
+      rwOn = false;
       break;
     default:
       break;
