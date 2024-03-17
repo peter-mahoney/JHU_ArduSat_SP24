@@ -13,12 +13,14 @@ bool heaterOn;
 float temp1; 
 float temp2;
 float temp3;
-
+int transistorPin = 3;
+int tempPin = 0;
 void setup() {
   // initiate serial interface to mega UART
   // also can be serial monitor for debug
   Serial.begin(9600);
   // initiate I2C interfaces if any
+  pinMode(transistorPin, OUTPUT); // Set transistorPin as an output
   // pull in TCS address
   for (int i = 0; i < sizeof(addrs) / sizeof(addrs[0]); i++) {
         if (addrs[i].name == ADDR_TCS) {
@@ -39,7 +41,7 @@ void loop() {
   // Do TCS actions
   // Process sensor data
   collectData();
-  // Adjust heater states
+  actuateHeaters();
   // Send unsolicited telem to mega every 2 seconds
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= intervalShort) {
@@ -51,10 +53,25 @@ void collectData(){
   temp1 = 10.00;
   temp2 = 25.00;
   temp3 = 30.00;
-  if (heaterEnabled == true) {
+  int tempReading = analogRead(tempPin);
+  // This is OK
+  double tempK = log(10000.0 * ((1024.0 / tempReading - 1)));
+  tempK = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * tempK * tempK )) * tempK );       //  Temp Kelvin
+  float tempC = tempK - 273.15;            // Convert Kelvin to Celcius
+  float tempF = (tempC * 9.0)/ 5.0 + 32.0; // Convert Celcius to Fahrenheit
+  temp1 = tempF;
+//  Serial.println(temp1);
+}
+void actuateHeaters(){
+  if (temp1 < 73.5 && heaterEnabled == true) {
+    // If the temperature is below 73.5 degrees Fahrenheit, set the transistor pin high
+    digitalWrite(transistorPin, HIGH);
+//    Serial.println("Turning heater on.");
     heaterOn = true;
-  }
-  else {
+  } else if (temp1 > 76.0 || heaterEnabled == false) {
+    // If the temperature is 76 degrees Fahrenheit or above, set the transistor pin low
+    digitalWrite(transistorPin, LOW);
+//    Serial.println("Turning heater off.");
     heaterOn = false;
   }
 }
@@ -78,8 +95,6 @@ void sendTlm() {
   Serial.print(TLM_TYPE);
   Serial.print(csvTcsPacket);
   Serial.print(END_MARKER);
-  // TODO, remove this once real TCS code implemented
-  heaterEnabled = true;
 }
 // Reads commands in (if any) from UART buffer
 // Should generalize this to other potential
