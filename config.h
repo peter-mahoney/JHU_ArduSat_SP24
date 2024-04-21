@@ -8,6 +8,8 @@
 #define TLM_TYPE   'T'
 #define CMD_TYPE   'C'
 #define LOG_TYPE   'L'
+// Telem publish period (msec)
+#define TLM_PERIOD 5000
 
 // Define address struct
 struct Addresses {
@@ -57,11 +59,15 @@ const PacketTypes pckts[] = {
 
 // Define telemetry points
 const Telemetry tcsPoints[] = {
-    {"TEMP_1", 'A'},
-    {"TEMP_2", 'B'},
-    {"TEMP_3", 'C'},
+    {"PANEL_TEMP_1_C", 'A'},
+    {"PANEL_TEMP_2_C", 'B'},
+    {"TEMP_BOARD_C", 'C'},
     {"HEATERS_ENABLED", 'D'},
-    {"HEATERS_ON", 'E'},
+    {"HEATER_1_ON", 'E'},
+    {"HEATER_2_ON", 'F'},
+    {"HEATER_RAIL_AMPS", 'G'},
+    {"HEATER_RAIL_VOLTS", 'H'},
+    {"HEATER_RAIL_WATTS", 'I'},
     // Add more telemetry points as needed...
 };
 
@@ -69,43 +75,78 @@ const Telemetry tcsPoints[] = {
 const Commands tcsCmds[] = {
     {"ENABLE_HEATERS", 'A'},
     {"DISABLE_HEATERS", 'B'},
-    {"SURVIVAL_SETPOINTS", 'C'},
-    {"NOMINAL_SETPOINTS", 'D'},
+    {"NOMINAL_SETPOINTS", 'C'},
+    {"SURVIVAL_SETPOINTS", 'D'},
     // Add more commands as needed...
 };
 // Define telemetry points
 const Telemetry adcsPoints[] = {
-    {"RW_ON", 'A'},
+    {"PDIODE_A", 'A'},
+    {"PDIODE_B", 'B'},
+    {"PDIODE_B", 'C'},
+    {"PDIODE_B", 'D'},
+    {"MOTOR_ON", 'E'},
+    {"IMU_ENABLED", 'F'},
+    {"IMU_X_ACCEL", 'G'},
+    {"IMU_Y_ACCEL", 'H'},
+    {"IMU_Z_ACCEL", 'I'},
+
     // Add more telemetry points as needed...
 };
 
 // Define commands
 const Commands adcsCmds[] = {
-    {"TURN_ON_RW", 'A'},
-    {"TURN_OFF_RW", 'B'},
+    {"ACTIVATE_RXWHEEL", 'A'},
+    {"SET_SPEED_RXWHEEL", 'B'},
+    {"DISABLE_RXWHEEL", 'C'},
+    {"SET_IMU_HIGH", 'D'},
+    {"SET_IMU_MID", 'E'},
+    {"SET_IMU_LOW", 'F'},
     // Add more commands as needed...
 };
+// Define telemetry points
+const Telemetry epsPoints[] = {
+    {"MPPT_OUT_VOLTS", 'A'},
+    {"MPPT_OUT_AMPS", 'B'},
+    {"MPPT_OUT_POWER", 'C'},
+    {"BOOST_OUT_VOLTS", 'D'},
+    {"BOOST_OUT_AMPS", 'E'},
+    {"BOOST_OUT_POWER", 'F'},
+    {"BATT_SOC", 'G'},
+    {"BATT_VOLTS", 'H'},
+    {"BATT_ENABLED", 'I'},
+    {"BATT_CHARGING", 'J'},
+    {"RAIL_ENABLED", 'K'},
+    // Add more telemetry points as needed...
+};
 const Commands epsCmds[] = {
-    {"ENABLE_PHOTODIODES", 'A'},
+    {"ENABLE_BATTERY", 'A'},
+    {"DISABLE_BATTERY", 'B'},
+    {"ENABLE_RAIL", 'C'},
+    {"DISABLE_RAIL", 'D'},
     // Add more commands as needed...
 };
 // Define commands
-const Commands megaCmds[] = {
+const Commands cdhCmds[] = {
     {"RESET_TCS", 'A'},
     {"RESET_ADCS", 'B'},
-    {"SURVIVAL_THERMAL", 'C'},
-    {"NOMINAL_THERMAL", 'D'},
+    {"RESET_TTC", 'C'},
+    {"RESET_ALL", 'D'},
     // Add more commands as needed...
 };
 // Define rules
-const AutonomyRules rules[] = {
-    {"LOW_VOLTAGE_YELLOW", 'A'},
-    {"LOW_VOLTAGE_RED", 'B'},
-    {"TCS_WATCHDOG", 'C'},
-    {"ADCS_WATCHDOG", 'D'},
-    {"TTC_WATCHDOG", 'E'},
-    {"OVERTEMP", 'F'},
-    {"ADCS_FAULT", 'G'},
+const AutonomyRules cdhAutonomy[] = {
+    {"TCS_WATCHDOG", 'A'},
+    {"ADCS_WATCHDOG", 'B'},
+    {"TTC_WATCHDOG", 'C'},
+    {"OVERTEMP", 'D'},
+    {"ADCS_FAULT", 'E'},
+    // Add more rules as needed...
+};
+const AutonomyRules epsAutonomy[] = {
+    {"UNSAFE_BATT_SOC", 'A'},
+    {"LOW_RAIL_VOLTAGE", 'B'},
+    {"HIGH_RAIL_VOLTAGE", 'C'},
     // Add more rules as needed...
 };
 #endif // End of CONSTANTS_H
