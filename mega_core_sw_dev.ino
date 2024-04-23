@@ -112,6 +112,12 @@ void setup() {
   // EPS disabled at startup (RECONSIDER)
   batteryEnabled = false;
   railEnabled = false;
+  // Print startup log
+  TTC_UART->print(START_MARKER);
+  TTC_UART->print(cdhAddress);
+  TTC_UART->print(LOG_TYPE);
+  TTC_UART->print("Core SW starting up!");
+  TTC_UART->print(END_MARKER);
 }
 
 void loop() {
