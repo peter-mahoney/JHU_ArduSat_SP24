@@ -44,7 +44,7 @@ struct AutonomyRules {
 const Addresses addrs[] = {
     {"TCS_ADDRS", 'H'},
     {"ADCS_ADDRS", 'A'},
-    {"MEGA_ADDRS", 'M'},
+    {"CDH_ADDRS", 'C'},
     {"TTC_ADDRS", 'T'},
     {"EPS_ADDRS", 'E'},
     // Add more addresses as needed...
@@ -62,12 +62,13 @@ const Telemetry tcsPoints[] = {
     {"PANEL_TEMP_1_C", 'A'},
     {"PANEL_TEMP_2_C", 'B'},
     {"TEMP_BOARD_C", 'C'},
-    {"HEATERS_ENABLED", 'D'},
-    {"HEATER_1_ON", 'E'},
-    {"HEATER_2_ON", 'F'},
-    {"HEATER_RAIL_AMPS", 'G'},
-    {"HEATER_RAIL_VOLTS", 'H'},
-    {"HEATER_RAIL_WATTS", 'I'},
+    {"HEATER_RAIL_VOLTAGE", 'D'},
+    {"HEATER_RAIL_CURRENT", 'E'},
+    {"HEATER_RAIL_POWER", 'F'},
+    {"HEATERS_ENABLED", 'G'},
+    {"HEATER_1_ON", 'H'},
+    {"HEATER_2_ON", 'I'},
+
     // Add more telemetry points as needed...
 };
 
@@ -106,18 +107,18 @@ const Commands adcsCmds[] = {
 };
 // Define telemetry points
 const Telemetry epsPoints[] = {
-    {"MPPT_OUT_VOLTS", 'A'},
-    {"MPPT_OUT_AMPS", 'B'},
-    {"MPPT_OUT_POWER", 'C'},
-    {"BOOST_OUT_VOLTS", 'D'},
-    {"BOOST_OUT_AMPS", 'E'},
-    {"BOOST_OUT_POWER", 'F'},
-    {"BATT_SOC", 'G'},
-    {"BATT_VOLTS", 'H'},
-    {"BATT_ENABLED", 'I'},
-    {"BATT_CHARGING", 'J'},
-    {"RAIL_ENABLED", 'K'},
-    // Add more telemetry points as needed...
+    {"BUS_VOLTAGE", 'A'}, //V
+    {"BUS_CURRENT", 'B'}, //mA
+    {"BUS_POWER", 'C'}, //mW
+    {"BATT_ENABLED", 'D'},
+    {"RAIL_ENABLED", 'E'},
+    // Below is not yet implemented
+    // {"BATT_SOC", 'F'}, //percent
+    // {"BATT_VOLTAGE", 'G'}, //V
+    // {"MPPT_OUT_VOLTAGE", 'H'},
+    // {"MPPT_OUT_CURRENT", 'I'},
+    // {"MPPT_OUT_POWER", 'J'},
+    // {"BATT_CHARGING", 'K'},
 };
 const Commands epsCmds[] = {
     {"ENABLE_BATTERY", 'A'},
