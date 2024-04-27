@@ -306,14 +306,6 @@ void processMessage(Stream &nodeUart) {
                 break;
               }
             }
-          // Test code, TODO remove all Serial prints when integrated with TTC
-          if (infoType == TLM_TYPE){
-            Serial.print("Receiving telemetry from: ");
-          }
-          else if (infoType == LOG_TYPE) {
-            Serial.print("Receiving log message from: ");
-          }
-          Serial.println(subsystem);
           // Route message across TTC UART for downlink
           TTC_UART->print(START_MARKER);
           TTC_UART->print(address); //sender address
