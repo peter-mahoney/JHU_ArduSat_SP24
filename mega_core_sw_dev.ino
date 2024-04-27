@@ -2,7 +2,7 @@
 // Peter Mahoney SP '24
 #include <stdio.h>
 #include <string.h>
-#include <Adafruit_INA219.h>
+#include <Adafruit_INA260.h>
 #include "config.h"
 #define ADDR_CDH "CDH_ADDRS"
 #define ADDR_EPS "EPS_ADDRS"
@@ -10,7 +10,7 @@
 #define ADDR_TCS "TCS_ADDRS"
 #define ADDR_ADCS "ADCS_ADDRS"
 // Ground test mode?
-bool groundTestMode = true; 
+bool groundTestMode = false; 
 // variables to hold UART Address
 char cdhAddress;
 char epsAddress;
@@ -36,7 +36,7 @@ const long thirtySec = 30000; // 30 second interval
 const long tenMin = 600000; // 10 min interval
 // EPS telem
 bool wheelSwitchOn; 
-float busVoltage; //V
+float busVoltage; // V
 float busCurrent; // mA
 float busPower; // mW
 // float battSoc; //%
@@ -46,7 +46,7 @@ const float busVoltageLow = 4.0; //volts
 const float busCurrentHigh = 6000; //mA
 const int wheelSwitchPin = 50;
 // Rail voltage sensor
-Adafruit_INA219 ina219;
+Adafruit_INA260 ina260 = Adafruit_INA260();
 
 void setup() {
   // initiate serial interfaces
@@ -81,11 +81,11 @@ void setup() {
   }
   // initiate I2C interfaces
   // Current voltage monitor
-  if (! ina219.begin()) {
+  if (! ina260.begin()) {
     TTC_UART->print(START_MARKER);
     TTC_UART->print(epsAddress);
     TTC_UART->print(LOG_TYPE);
-    TTC_UART->print("Failed to find INA219 chip.");
+    TTC_UART->print("Failed to find INA260 chip.");
     TTC_UART->print(END_MARKER);
     delay(tenSec);
   }
