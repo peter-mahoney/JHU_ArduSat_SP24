@@ -11,6 +11,8 @@
 #define ADDR_ADCS "ADCS_ADDRS"
 // Ground test mode?
 bool groundTestMode = false; 
+// EPS active?
+bool epsActive = false;
 // variables to hold UART Address
 char cdhAddress;
 char epsAddress;
@@ -123,7 +125,9 @@ void loop() {
   // Send check if any commands in buffer from TTC
   processGroundCommand();
   // EPS service loop
-  epsLoop();
+  if (epsActive){
+    epsLoop();
+  }
   // Get Telemetry or Log over UART from subsystems
   processMessage(*TCS_UART);
   processMessage(*ADCS_UART);
@@ -250,13 +254,17 @@ void processMegaCommand(char commandId) {
       resetBoard(ttcResetPin);
       ttcWatchdog = currentMillis;
     case 'D':
-      // reset TTC
+      // reset all
       resetBoard(ttcResetPin);
       resetBoard(adcsResetPin);
       resetBoard(tcsResetPin);
       ttcWatchdog = currentMillis;
       adcsWatchdog = currentMillis;
       tcsWatchdog = currentMillis;
+    case 'E':
+      epsActive = true;
+    case 'F':
+      epsActive = false;
     default:
       return;
   }
