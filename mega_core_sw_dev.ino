@@ -105,9 +105,8 @@ void setup() {
   digitalWrite(ttcResetPin, HIGH);
   digitalWrite(adcsResetPin, HIGH);
   // Initialize EPS switches
-  pinMode(batterySwitchPin, OUTPUT);
-  pinMode(railSwitchPin, OUTPUT);
-  // EPS disabled at startup (RECONSIDER)
+  pinMode(wheelSwitchPin, OUTPUT);
+  // Wheel disabled at startup
   wheelSwitchOn = false;
   // Print startup log
   TTC_UART->print(START_MARKER);
@@ -385,8 +384,7 @@ void processEpsTelem() {
 }
 void sendEpsTelem() {
   // Send telem to TTC from EPS system
-  int batteryEnabledInt = batteryEnabled ? 1 : 0;  // Convert bool to int (1 for true, 0 for false)
-  int railEnabledInt = railEnabled ? 1 : 0;
+  int wheelSwitchInt = wheelSwitchOn ? 1 : 0;  // Convert bool to int (1 for true, 0 for false)
   char busVStr[8];
   dtostrf(busVoltage,6,2,busVStr);
   char busCurStr[8];
@@ -396,7 +394,7 @@ void sendEpsTelem() {
   // Buffer to hold the CSV string (adjust the size as needed)
   char csvEpsPacket[40];
   // Format the data into the CSV string
-  snprintf(csvEpsPacket, sizeof(csvEpsPacket), "%s,%s,%s,%d,%d", busVStr, busCurStr, busPowStr, batteryEnabledInt, railEnabledInt);
+  snprintf(csvEpsPacket, sizeof(csvEpsPacket), "%s,%s,%s,%d" busVStr, busCurStr, busPowStr, wheelSwitchInt);
   // Send data across UART to MEGA
   TTC_UART->print(START_MARKER);
   TTC_UART->print(epsAddress);
@@ -407,24 +405,24 @@ void sendEpsTelem() {
 void processEpsAutonomy(){
   // Monitor telemetry and respond to out of limits
   // Bus voltage out of range, isolate battery
-  if ((busVoltage>busVoltageHigh || busVoltage<busVoltageLow)&& batteryEnabled){
+  if ((busVoltage>busVoltageHigh || busVoltage<busVoltageLow)&& wheelSwitchOn){
     batteryEnabled=false;
     TTC_UART->print(START_MARKER);
     TTC_UART->print(epsAddress);
     TTC_UART->print(LOG_TYPE);
-    TTC_UART->print("Bus voltage out of range, isolating battery.");
+    TTC_UART->print("Bus voltage out of range, isolating wheel.");
     TTC_UART->print(END_MARKER);
-    setEpsSwitch(batterySwitchPin, batteryEnabled);
+    setEpsSwitch(wheelSwitchPin, wheelSwitchOn);
   }
   // Current draw too high, shutdown rail
-  if (busCurrent>busCurrentHigh && railEnabled){
+  if (busCurrent>busCurrentHigh && wheelSwitchOn){
     railEnabled=false;
     TTC_UART->print(START_MARKER);
     TTC_UART->print(epsAddress);
     TTC_UART->print(LOG_TYPE);
-    TTC_UART->print("Bus current out of range, disabling rail.");
+    TTC_UART->print("Bus current out of range, disabling wheel and heaters.");
     TTC_UART->print(END_MARKER);
-    setEpsSwitch(railSwitchPin, railEnabled);
+    setEpsSwitch(wheelSwitchPin, wheelSwitchOn);
   }
 }
 void processEpsCommand(char commandId) {
@@ -449,20 +447,12 @@ void processEpsCommand(char commandId) {
   // Execute command and send log back to MEGA
   switch (commandId) {
     case 'A':
-      batteryEnabled = true;
-      setEpsSwitch(batterySwitchPin, batteryEnabled);
+      wheelSwitchOn = true;
+      setEpsSwitch(wheelSwitchPin, wheelSwitchOn);
       break;
     case 'B':
-      batteryEnabled = false;
-      setEpsSwitch(batterySwitchPin, batteryEnabled);
-      break;
-    case 'C':
-      railEnabled = true;
-      setEpsSwitch(railSwitchPin, railEnabled);
-      break;
-    case 'D':
-      railEnabled = false;
-      setEpsSwitch(railSwitchPin, railEnabled);
+      wheelSwitchOn = false;
+      setEpsSwitch(wheelSwitchPin, wheelSwitchOn);
       break;
     default:
       return;
