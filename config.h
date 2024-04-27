@@ -119,6 +119,8 @@ const Commands cdhCmds[] = {
     {"RESET_ADCS", 'B'},
     {"RESET_TTC", 'C'},
     {"RESET_ALL", 'D'},
+    {"ENABLE_EPS", 'E'},
+    {"DISABLE_EPS", 'F'},
     // Add more commands as needed...
 };
 // Define rules
