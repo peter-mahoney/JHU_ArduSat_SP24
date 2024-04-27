@@ -98,11 +98,7 @@ const Telemetry adcsPoints[] = {
 // Define commands
 const Commands adcsCmds[] = {
     {"ACTIVATE_RXWHEEL", 'A'},
-    {"SET_SPEED_RXWHEEL", 'B'},
-    {"DISABLE_RXWHEEL", 'C'},
-    {"SET_IMU_HIGH", 'D'},
-    {"SET_IMU_MID", 'E'},
-    {"SET_IMU_LOW", 'F'},
+    {"DISABLE_RXWHEEL", 'B'},
     // Add more commands as needed...
 };
 // Define telemetry points
@@ -110,21 +106,11 @@ const Telemetry epsPoints[] = {
     {"BUS_VOLTAGE", 'A'}, //V
     {"BUS_CURRENT", 'B'}, //mA
     {"BUS_POWER", 'C'}, //mW
-    {"BATT_ENABLED", 'D'},
-    {"RAIL_ENABLED", 'E'},
-    // Below is not yet implemented
-    // {"BATT_SOC", 'F'}, //percent
-    // {"BATT_VOLTAGE", 'G'}, //V
-    // {"MPPT_OUT_VOLTAGE", 'H'},
-    // {"MPPT_OUT_CURRENT", 'I'},
-    // {"MPPT_OUT_POWER", 'J'},
-    // {"BATT_CHARGING", 'K'},
+    {"WHEEL_SWITCH_ON", 'D'},
 };
 const Commands epsCmds[] = {
-    {"ENABLE_BATTERY", 'A'},
-    {"DISABLE_BATTERY", 'B'},
-    {"ENABLE_RAIL", 'C'},
-    {"DISABLE_RAIL", 'D'},
+    {"ENABLE_WHEEL_SWITCH", 'A'},
+    {"DISABLE_WHEEL_SWITCH", 'B'},
     // Add more commands as needed...
 };
 // Define commands
