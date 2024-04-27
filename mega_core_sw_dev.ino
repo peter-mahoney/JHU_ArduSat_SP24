@@ -377,10 +377,9 @@ void epsLoop() {
 }
 void processEpsTelem() {
   //Gather telem from EPS system
-  busVoltage = ina219.getBusVoltage_V();
-  busCurrent = ina219.getCurrent_mA();
-  busPower = ina219.getPower_mW();
-  // battSoc = 100*(battVoltage/3.7);
+  busVoltage = ina260.readBusVoltage()/1000;
+  busCurrent = ina260.readCurrent();
+  busPower = ina260.readPower();
 }
 void sendEpsTelem() {
   // Send telem to TTC from EPS system
@@ -394,7 +393,7 @@ void sendEpsTelem() {
   // Buffer to hold the CSV string (adjust the size as needed)
   char csvEpsPacket[40];
   // Format the data into the CSV string
-  snprintf(csvEpsPacket, sizeof(csvEpsPacket), "%s,%s,%s,%d" busVStr, busCurStr, busPowStr, wheelSwitchInt);
+  snprintf(csvEpsPacket, sizeof(csvEpsPacket), "%s,%s,%s,%d", busVStr, busCurStr, busPowStr, wheelSwitchInt);
   // Send data across UART to MEGA
   TTC_UART->print(START_MARKER);
   TTC_UART->print(epsAddress);
@@ -406,7 +405,7 @@ void processEpsAutonomy(){
   // Monitor telemetry and respond to out of limits
   // Bus voltage out of range, isolate battery
   if ((busVoltage>busVoltageHigh || busVoltage<busVoltageLow)&& wheelSwitchOn){
-    batteryEnabled=false;
+    wheelSwitchOn=false;
     TTC_UART->print(START_MARKER);
     TTC_UART->print(epsAddress);
     TTC_UART->print(LOG_TYPE);
@@ -416,7 +415,7 @@ void processEpsAutonomy(){
   }
   // Current draw too high, shutdown rail
   if (busCurrent>busCurrentHigh && wheelSwitchOn){
-    railEnabled=false;
+    wheelSwitchOn=false;
     TTC_UART->print(START_MARKER);
     TTC_UART->print(epsAddress);
     TTC_UART->print(LOG_TYPE);
