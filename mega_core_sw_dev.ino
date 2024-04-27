@@ -46,7 +46,7 @@ float busPower; // mW
 const float busVoltageHigh = 13.0; //volts
 const float busVoltageLow = 4.0; //volts
 const float busCurrentHigh = 6000; //mA
-const int wheelSwitchPin = 50;
+const int wheelSwitchPin = 25;
 // Rail voltage sensor
 Adafruit_INA260 ina260 = Adafruit_INA260();
 
