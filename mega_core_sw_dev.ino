@@ -35,18 +35,16 @@ const long tenSec = 10000; // 10 second interval
 const long thirtySec = 30000; // 30 second interval
 const long tenMin = 600000; // 10 min interval
 // EPS telem
-bool batteryEnabled;
-bool railEnabled; 
+bool wheelSwitchOn; 
 float busVoltage; //V
 float busCurrent; // mA
 float busPower; // mW
 // float battSoc; //%
 // EPS constants
-const float busVoltageHigh = 7.0; //volts
+const float busVoltageHigh = 13.0; //volts
 const float busVoltageLow = 4.0; //volts
-const float busCurrentHigh = 5000; //mA
-const int batterySwitchPin = 50;
-const int railSwitchPin = 52;
+const float busCurrentHigh = 6000; //mA
+const int wheelSwitchPin = 50;
 // Rail voltage sensor
 Adafruit_INA219 ina219;
 
@@ -110,8 +108,7 @@ void setup() {
   pinMode(batterySwitchPin, OUTPUT);
   pinMode(railSwitchPin, OUTPUT);
   // EPS disabled at startup (RECONSIDER)
-  batteryEnabled = false;
-  railEnabled = false;
+  wheelSwitchOn = false;
   // Print startup log
   TTC_UART->print(START_MARKER);
   TTC_UART->print(cdhAddress);
