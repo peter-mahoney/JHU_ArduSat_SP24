@@ -12,7 +12,7 @@
 
 #define SERIAL_DEBUG_ENABLE 0 /* 0 = disable, 1 = enable */
 #define MPU6050_CALIBRATION 1 /* 0 = disable, 1 = enable */
-#define CONTROLLER_MODE 0 /* 0 = Speed stabilization only, 1 = Speed and Attitude stabilization, 2 = same as 1, but change set point every N secondes */
+#define CONTROLLER_MODE 1 /* 0 = Speed stabilization only, 1 = Speed and Attitude stabilization, 2 = same as 1, but change set point every N secondes */
 #define TELEMETRY_DEBUG_ENABLE 0 /* 0 = disable, 1 = enable, sends telemtry over serial monitor for debugging */
 #define CDH_TELEMETRY 1 /* 0 = disable, 1 = enable, sends telemetry to MEGA CDH system */
 
@@ -155,10 +155,10 @@ void loop() {
       // Determine rotation direction: clockwise or counterclockwise
       digitalWrite(PIN_DIR, maxSensorIndex < 2 ? HIGH : LOW); // Simplified: adjust for your setup
       if (maxSensorIndex < 2){
-        motorSpeed = MAX_SPEED;
+        motorSpeed = -MAX_SPEED;
       }
       else{
-        motorSpeed = -MAX_SPEED;
+        motorSpeed = MAX_SPEED;
       }
      
       // Make the motor step
