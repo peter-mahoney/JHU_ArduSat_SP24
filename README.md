@@ -38,6 +38,8 @@
 - Within the flight_sw directory is the UNO and MEGA "firmware" code (`.ino` sketch files) which can be uploaded to Arduino boards via the Arduino IDE (or an IDE enabled editor like VS Code)
 - Within the ground_sw directory is the MATLAB telemetry monitoring dashboard.
 - Prior to compiling and uploading .ino sketches to your Arduino board(s), make sure the `config.h` file is in the same folder as each of the `.ino` sketch files on your machine or else the sketches will not be able to find the config (just copy the same file into each directory)
+- groundSW.m contains the code for a telemetry viewer tool developed in MATLAB
+-   This may require a dedicated ground terminal Arduino
 
 
   
